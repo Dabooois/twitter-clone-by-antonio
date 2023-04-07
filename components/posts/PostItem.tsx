@@ -3,8 +3,9 @@ import useLoginModal from '@/hooks/useLoginModal';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useRouter } from 'next/router';
 import React, { useCallback, useMemo } from 'react';
-import { AiOutlineHeart, AiOutlineMessage } from 'react-icons/ai';
+import { AiOutlineHeart, AiOutlineMessage, AiFillHeart } from 'react-icons/ai';
 import Avatar from '../Avatar';
+import useLike from '@/hooks/useLike';
 
 interface IPostItem {
   data: Record<string, any>;
@@ -16,7 +17,7 @@ const PostItem: React.FC<IPostItem> = ({ data, userId }) => {
   const loginModal = useLoginModal();
 
   const { data: currentUser } = useCurrentUser();
-
+  const { hasLiked, toggleLike } = useLike({ postId: data?.id, userId });
   const gotoUser = useCallback(
     (event: any) => {
       event.stopPropagation();
@@ -31,9 +32,12 @@ const PostItem: React.FC<IPostItem> = ({ data, userId }) => {
   const onLike = useCallback(
     (event: any) => {
       event.stopPropagation();
-      loginModal.onOpen();
+      if (!currentUser) {
+        return loginModal.onOpen();
+      }
+      toggleLike();
     },
-    [loginModal]
+    [loginModal, currentUser, toggleLike]
   );
 
   const createdAt = useMemo(() => {
@@ -43,6 +47,12 @@ const PostItem: React.FC<IPostItem> = ({ data, userId }) => {
 
     return formatDistanceToNowStrict(new Date(data.createdAt));
   }, [data.createdAt]);
+
+  const LikeIcon = hasLiked ? (
+    <AiFillHeart size={20} color='red' />
+  ) : (
+    <AiOutlineHeart size={20} />
+  );
 
   return (
     <div
@@ -71,15 +81,15 @@ const PostItem: React.FC<IPostItem> = ({ data, userId }) => {
           <div className='flex flex-row items-ceter mt-3 gap-10'>
             <div className='flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-sky-500'>
               <AiOutlineMessage size={20} />
-              <p>{data.commets?.length || 0}</p>
+              <p>{data.comments?.length || 0}</p>
             </div>
 
             <div
               onClick={onLike}
               className='flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500'
             >
-              <AiOutlineHeart size={20} />
-              <p>{data.commets?.length || 0}</p>
+              {LikeIcon}
+              <p>{data.likeIds.length}</p>
             </div>
           </div>
         </div>

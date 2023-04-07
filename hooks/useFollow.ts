@@ -21,7 +21,7 @@ const useFollow = (userId: number) => {
       return loginModal.onOpen();
     }
     try {
-      let request;
+      
 
       if (isFollowing) {
         await axios.delete('/api/follow', { data: userId });
